@@ -1,11 +1,14 @@
 # Matrix Digital Rain Screensaver
 
+[![Build](https://github.com/rwz/matrix-macos-screensaver/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/rwz/matrix-macos-screensaver/actions/workflows/build.yml?query=branch%3Amain)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform: macOS](https://img.shields.io/badge/Platform-macOS_11+-blue.svg)](https://www.apple.com/macos/)
+[![Platform: macOS](https://img.shields.io/badge/Platform-macOS_12+-blue.svg)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)](https://swift.org)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/cassmtnr)
 
-A Matrix-style screensaver for macOS with a personalized intro sequence and real-time falling green characters.
+A Matrix-style screensaver for macOS with real-time falling green characters.
+
+Fork of [cassmtnr/matrix-macos-screensaver](https://github.com/cassmtnr/matrix-macos-screensaver) that drops the intro sequence and goes straight into the rain, with a smaller font and longer trails.
 
 <p align="center">
   <img src="docs/matrix_preview.gif" alt="Matrix Rain Preview" width="100%">
@@ -13,35 +16,39 @@ A Matrix-style screensaver for macOS with a personalized intro sequence and real
 
 ## Features
 
-- **Personalized intro** — "Wake up, _\<your name\>_..." typed with a blinking cursor, using your Mac username
 - **Authentic digital rain** — Matrix-Code font with 57 custom glyphs, glowing white heads and fading green trails
-- **Frame-rate independent** — wall-clock timing for the intro, delta-time for the rain. Consistent speed at any FPS
+- **Frame-rate independent** — delta-time animation. Consistent speed at any FPS
 - **Multi-display & adaptive** — scales to any screen resolution across all connected displays
 
 ## Installation
 
 ### Download
 
-1. Download `MatrixDigitalRain.saver.zip` from [Releases](https://github.com/cassmtnr/matrix-macos-screensaver/releases/latest)
-2. Unzip and double-click `MatrixDigitalRain.saver` to install
-3. Select it in **System Settings > Screen Saver**
+1. Download the latest build: [`MatrixDigitalRain.saver.zip`](https://github.com/rwz/matrix-macos-screensaver/releases/download/latest/MatrixDigitalRain.saver.zip) (rebuilt on every push to `main`)
+2. Unzip it. The build is ad-hoc signed, not notarized, so clear the download quarantine flag:
+   ```bash
+   xattr -dr com.apple.quarantine MatrixDigitalRain.saver
+   ```
+3. Double-click `MatrixDigitalRain.saver` to install
+4. Select it in **System Settings > Screen Saver**
 
 ### Build from Source
 
 ```bash
-git clone https://github.com/cassmtnr/matrix-macos-screensaver.git
+git clone https://github.com/rwz/matrix-macos-screensaver.git
 cd matrix-macos-screensaver
 
 xcodebuild -project MatrixDigitalRain.xcodeproj \
   -scheme MatrixDigitalRain \
   -configuration Release \
   -derivedDataPath build \
+  CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= \
   build
 
 open build/Build/Products/Release/MatrixDigitalRain.saver
 ```
 
-Requires macOS 11.0+.
+The `CODE_SIGN_*` overrides sign the bundle ad-hoc, so no Apple developer account is needed. Requires macOS 12.0+.
 
 ## Development
 
@@ -49,30 +56,28 @@ Requires macOS 11.0+.
 # Build
 xcodebuild -project MatrixDigitalRain.xcodeproj \
   -scheme MatrixDigitalRain -configuration Release \
-  -derivedDataPath build build
+  -derivedDataPath build \
+  CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= \
+  build
 
-# Preview (Cmd+Q to quit)
+# Preview (Esc, Cmd+Q or click to quit)
 swift preview.swift
 swift preview.swift --duration 30
 
 # Tests
 xcodebuild -project MatrixDigitalRain.xcodeproj \
-  -scheme MatrixDigitalRain -configuration Debug test
+  -scheme MatrixDigitalRain -configuration Debug \
+  CODE_SIGN_IDENTITY=- test
 
 # Generate preview GIF (requires ffmpeg)
 swift generate_preview.swift --help
 ```
 
-### Releasing
+### Builds
 
-Releases are signed with a Developer ID Application certificate, notarized, and published manually from a local Mac. The short version:
+Every push to `main` runs [`.github/workflows/build.yml`](.github/workflows/build.yml): it runs the tests, builds an ad-hoc signed Release bundle, and publishes it to the [`latest`](https://github.com/rwz/matrix-macos-screensaver/releases/tag/latest) pre-release.
 
-```bash
-./scripts/sign-and-notarize.sh
-gh release create vX.Y.Z MatrixDigitalRain.saver.zip --generate-notes
-```
-
-See [`RELEASING.md`](RELEASING.md) for prerequisites (Developer ID cert, App Store Connect API key, notarytool keychain profile), step-by-step instructions, verification, and troubleshooting.
+Signed and notarized releases need a Developer ID certificate; see [`RELEASING.md`](RELEASING.md).
 
 ### Project Structure
 
@@ -80,7 +85,6 @@ See [`RELEASING.md`](RELEASING.md) for prerequisites (Developer ID cert, App Sto
 MatrixDigitalRain/
 ├── MatrixConfig.swift           # All tunable constants
 ├── MatrixColumn.swift           # Single falling column logic
-├── IntroSequence.swift          # "Wake up..." intro state machine
 ├── MatrixDigitalRainView.swift  # Main ScreenSaverView subclass
 ├── Matrix-Code.ttf              # Custom font (57 glyphs)
 └── Info.plist
