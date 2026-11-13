@@ -4,12 +4,13 @@
 #
 # Put this directory first on PATH so generate_preview.swift picks it up:
 #
-#   PATH="$PWD/scripts/ffmpeg-docker:$PATH" swift generate_preview.swift \
-#     --temp-dir build/preview-tmp
+#   PATH="$PWD/scripts/ffmpeg-docker:$PATH" swift generate_preview.swift
 #
-# The current directory is mounted at the same path inside the container, so
-# every file ffmpeg reads or writes must live under it (hence --temp-dir).
-# Docker Desktop and Colima only share $HOME by default, not /var/folders.
+# The current directory and $TMPDIR are mounted at the same paths inside the
+# container, so files under either work unchanged. Docker Desktop shares
+# /var/folders (where $TMPDIR lives) by default; Colima only shares $HOME
+# unless $TMPDIR is added to `mounts:` in colima.yaml. Without that, pass
+# --temp-dir build/preview-tmp so frames are written under the repo instead.
 
 set -eu
 
@@ -20,4 +21,12 @@ if ! command -v docker >/dev/null 2>&1; then
     exit 1
 fi
 
-exec docker run --rm -v "$PWD:$PWD" -w "$PWD" "$IMAGE" "$@"
+# Build the docker args in front of the ffmpeg args: [mounts...] IMAGE ffmpeg-args
+set -- "$IMAGE" "$@"
+set -- -v "$PWD:$PWD" "$@"
+if [ -n "${TMPDIR:-}" ] && [ -d "$TMPDIR" ]; then
+    tmp="${TMPDIR%/}"
+    case "$PWD/" in "$tmp"/*) ;; *) set -- -v "$tmp:$tmp" "$@" ;; esac
+fi
+
+exec docker run --rm -w "$PWD" "$@"
