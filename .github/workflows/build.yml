@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test & build screensaver
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Run tests
+        run: |
+          xcodebuild -project MatrixDigitalRain.xcodeproj \
+            -scheme MatrixDigitalRain \
+            -configuration Debug \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY=- \
+            test
+
+      # Ad-hoc signed: no Apple developer account or certificates needed.
+      - name: Build Release
+        run: |
+          xcodebuild -project MatrixDigitalRain.xcodeproj \
+            -scheme MatrixDigitalRain \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM= \
+            build
+          codesign --verify --strict --verbose=2 build/Build/Products/Release/MatrixDigitalRain.saver
+
+      # ditto keeps the bundle's permissions and signature intact
+      # (upload-artifact alone drops the executable bit).
+      - name: Package
+        run: ditto -c -k --keepParent build/Build/Products/Release/MatrixDigitalRain.saver MatrixDigitalRain.saver.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MatrixDigitalRain-${{ github.sha }}
+          path: MatrixDigitalRain.saver.zip
+          if-no-files-found: error
