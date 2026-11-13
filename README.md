@@ -71,6 +71,10 @@ xcodebuild -project MatrixDigitalRain.xcodeproj \
 
 # Generate preview GIF (requires ffmpeg)
 swift generate_preview.swift --help
+
+# ...or without installing ffmpeg, via Docker (frames must live under the repo)
+PATH="$PWD/scripts/ffmpeg-docker:$PATH" swift generate_preview.swift \
+  --skip 4 --render-width 1280 --render-height 720 --temp-dir build/preview-tmp
 ```
 
 ### Builds

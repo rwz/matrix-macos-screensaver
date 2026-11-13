@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# Runs ffmpeg from a Docker image instead of a local install.
+#
+# Put this directory first on PATH so generate_preview.swift picks it up:
+#
+#   PATH="$PWD/scripts/ffmpeg-docker:$PATH" swift generate_preview.swift \
+#     --temp-dir build/preview-tmp
+#
+# The current directory is mounted at the same path inside the container, so
+# every file ffmpeg reads or writes must live under it (hence --temp-dir).
+# Docker Desktop and Colima only share $HOME by default, not /var/folders.
+
+set -eu
+
+readonly IMAGE="mwader/static-ffmpeg:9.0.2"
+
+if ! command -v docker >/dev/null 2>&1; then
+    echo "error: docker not found. Install Docker (or Colima) or a local ffmpeg." >&2
+    exit 1
+fi
+
+exec docker run --rm -v "$PWD:$PWD" -w "$PWD" "$IMAGE" "$@"
