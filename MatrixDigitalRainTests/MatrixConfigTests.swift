@@ -41,7 +41,7 @@ final class MatrixConfigTests: XCTestCase {
     // MARK: - Rain config values
 
     func testConfigValues() {
-        XCTAssertEqual(MatrixConfig.fontSize, 20)
+        XCTAssertEqual(MatrixConfig.fontSize, 10)
         XCTAssertEqual(MatrixConfig.fps, 30)
         XCTAssertLessThan(MatrixConfig.minSpeed, MatrixConfig.maxSpeed)
         XCTAssertLessThan(MatrixConfig.minTrailLength, MatrixConfig.maxTrailLength)

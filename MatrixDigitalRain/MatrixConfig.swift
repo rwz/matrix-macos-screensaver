@@ -9,8 +9,8 @@ enum MatrixConfig {
 
     // MARK: - Rain rendering
 
-    static let fontSize: CGFloat = 20
-    static let columnWidth: CGFloat = 24
+    static let fontSize: CGFloat = 10
+    static let columnWidth: CGFloat = 12
     static let fps: Double = 30
 
     /// Probability that any single character mutates on a given frame,
