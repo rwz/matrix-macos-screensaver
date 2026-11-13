@@ -27,8 +27,8 @@ enum MatrixConfig {
 
     // MARK: - Column behavior
 
-    static let minTrailLength: Int = 10
-    static let maxTrailLength: Int = 31
+    static let minTrailLength: Int = 20
+    static let maxTrailLength: Int = 62
     static let minSpeed: Double = 0.05
     static let maxSpeed: Double = 0.50
 
