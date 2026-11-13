@@ -1,9 +1,8 @@
 #!/usr/bin/swift
 // Quick preview app — runs the screensaver view in a regular window
 // so you can screen-record it. Usage:
-//   swift preview.swift                    # manual quit with Cmd+Q
+//   swift preview.swift                    # quit with Esc, Cmd+Q, or a mouse click
 //   swift preview.swift --duration 20      # auto-quit after 20 seconds
-// Press Cmd+Q to quit early.
 
 import Cocoa
 import ScreenSaver
@@ -22,11 +21,37 @@ guard let viewClass = bundle.principalClass as? ScreenSaverView.Type else {
     exit(1)
 }
 
+/// Borderless windows refuse key status by default, which means they
+/// never receive keyboard events. Opt back in so Esc / Cmd+Q work.
+final class PreviewWindow: NSWindow {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 let app = NSApplication.shared
 app.setActivationPolicy(.regular)
 
+// Main menu with a Quit item, so Cmd+Q works like in any other app
+let mainMenu = NSMenu()
+let appMenuItem = NSMenuItem()
+mainMenu.addItem(appMenuItem)
+let appMenu = NSMenu()
+appMenu.addItem(withTitle: "Quit Preview", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+appMenuItem.submenu = appMenu
+app.mainMenu = mainMenu
+
+// Esc or a mouse click also quits, like a real screensaver
+let escKeyCode: UInt16 = 53
+NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .leftMouseDown, .rightMouseDown]) { event in
+    if event.type != .keyDown || event.keyCode == escKeyCode {
+        NSApplication.shared.terminate(nil)
+        return nil
+    }
+    return event
+}
+
 let screen = NSScreen.main!
-let window = NSWindow(
+let window = PreviewWindow(
     contentRect: screen.frame,
     styleMask: [.borderless],
     backing: .buffered,
