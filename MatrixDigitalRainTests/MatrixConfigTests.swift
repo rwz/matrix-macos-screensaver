@@ -76,34 +76,4 @@ final class MatrixConfigTests: XCTestCase {
         XCTAssertGreaterThan(MatrixConfig.fps, 0)
         XCTAssertLessThanOrEqual(MatrixConfig.fps, 120)
     }
-
-    // MARK: - Intro config values
-
-    func testIntroConfigValues() {
-        // Lines are non-empty
-        XCTAssertFalse(MatrixConfig.introLines.isEmpty)
-        for line in MatrixConfig.introLines {
-            XCTAssertFalse(line.text.isEmpty, "Intro line text should not be empty")
-            XCTAssertGreaterThan(line.pauseDuration, 0, "Pause duration should be positive")
-        }
-
-        // Timing values are positive
-        XCTAssertGreaterThan(MatrixConfig.introInitialDelay, 0)
-        XCTAssertGreaterThan(MatrixConfig.introTypingSpeed, 0)
-        XCTAssertGreaterThanOrEqual(MatrixConfig.introTypingJitter, 0)
-        XCTAssertGreaterThan(MatrixConfig.introCursorBlinkRate, 0)
-
-        // Layout values are positive
-        XCTAssertGreaterThan(MatrixConfig.introPadding, 0)
-        XCTAssertGreaterThan(MatrixConfig.introLineHeightMultiplier, 0)
-
-        // Font size is reasonable
-        XCTAssertGreaterThan(MatrixConfig.introFontSize, 0)
-        XCTAssertLessThanOrEqual(MatrixConfig.introFontSize, 48)
-    }
-
-    func testIntroLinesContainAtLeastOneInstantLine() {
-        let hasInstant = MatrixConfig.introLines.contains { $0.appearsInstantly }
-        XCTAssertTrue(hasInstant, "At least one intro line should appear instantly")
-    }
 }

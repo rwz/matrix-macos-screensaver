@@ -1,18 +1,15 @@
 import ScreenSaver
 import CoreText
 
-/// The main screensaver view. Orchestrates the intro sequence and the
-/// falling Matrix digital rain animation.
+/// The main screensaver view. Draws the falling Matrix digital rain animation.
 ///
 /// ## Architecture
-/// - `IntroSequence` handles the "Wake up, Neo..." typing animation
 /// - `MatrixColumn` handles individual falling character columns
 /// - `MatrixConfig` holds all tunable constants
 ///
 /// The view's `animateOneFrame()` is called by the ScreenSaver framework.
-/// During the intro, it delegates to `IntroSequence`. Once the intro
-/// completes, it updates all columns using real elapsed time (delta-time)
-/// for consistent speed regardless of frame rate.
+/// It updates all columns using real elapsed time (delta-time) for
+/// consistent speed regardless of frame rate.
 @objc(MatrixDigitalRainView)
 class MatrixDigitalRainView: ScreenSaverView {
 
@@ -21,9 +18,6 @@ class MatrixDigitalRainView: ScreenSaverView {
     private var columns: [MatrixColumn] = []
     private var numRows = 0
     private var lastBoundsSize: NSSize = .zero
-
-    /// The intro sequence that plays before the rain starts.
-    private var intro = IntroSequence()
 
     /// Tracks when the last frame was drawn, for delta-time calculation.
     private var lastFrameTime: Date?
@@ -127,7 +121,6 @@ class MatrixDigitalRainView: ScreenSaverView {
 
     override func startAnimation() {
         super.startAnimation()
-        intro.reset()
         lastFrameTime = nil
         initializeIfNeeded()
     }
@@ -153,12 +146,8 @@ class MatrixDigitalRainView: ScreenSaverView {
             ?? (1.0 / MatrixConfig.fps)
         lastFrameTime = now
 
-        if !intro.isComplete {
-            intro.update()
-        } else {
-            for column in columns {
-                column.update(deltaTime: deltaTime)
-            }
+        for column in columns {
+            column.update(deltaTime: deltaTime)
         }
 
         needsDisplay = true
@@ -172,12 +161,6 @@ class MatrixDigitalRainView: ScreenSaverView {
         // Black background (always)
         context.setFillColor(NSColor.black.cgColor)
         context.fill(bounds)
-
-        // During intro, delegate drawing and skip the rain
-        if !intro.isComplete {
-            intro.draw(in: context, bounds: bounds)
-            return
-        }
 
         // Draw the falling rain
         guard let font = ctFont, !columns.isEmpty else { return }

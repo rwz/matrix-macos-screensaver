@@ -36,59 +36,7 @@ enum MatrixConfig {
     /// Creates the staggered "wave" effect when the rain begins.
     static let maxColumnStaggerDelay: Double = 3.0
 
-    // MARK: - Intro sequence ("Wake up, Neo...")
-
-    /// Configuration for a single intro line.
-    struct IntroLine {
-        /// The text to display.
-        let text: String
-        /// Seconds to pause after this line finishes typing.
-        let pauseDuration: Double
-        /// If `true`, the line appears all at once instead of being typed.
-        let appearsInstantly: Bool
-    }
-
-    /// Seconds the blinking cursor is shown before the first line starts typing.
-    static let introInitialDelay: Double = 2.0
-
-    /// The user's first name, used to personalize intro lines.
-    /// Falls back to "Neo" if the system username is unavailable.
-    /// Can be overridden via the `MATRIX_INTRO_NAME` environment variable
-    /// (used by generate_preview.swift to show "Neo" in the public GIF).
-    private static let userName: String = {
-        if let override = ProcessInfo.processInfo.environment["MATRIX_INTRO_NAME"], !override.isEmpty {
-            return override
-        }
-        let fullName = NSFullUserName()
-        let firstName = fullName.components(separatedBy: " ").first ?? ""
-        return firstName.isEmpty ? "Neo" : firstName
-    }()
-
-    /// The lines displayed during the intro sequence.
-    /// Each line defines its text, pause duration, and whether it types or appears instantly.
-    static let introLines: [IntroLine] = [
-        IntroLine(text: "Wake up, \(userName)...",       pauseDuration: 1.5, appearsInstantly: false),
-        IntroLine(text: "The Matrix has you...",          pauseDuration: 1.5, appearsInstantly: false),
-        IntroLine(text: "Follow the white rabbit.",       pauseDuration: 1.5, appearsInstantly: false),
-        IntroLine(text: "Knock, knock, \(userName).",     pauseDuration: 1.5, appearsInstantly: true),
-    ]
-
-    /// Seconds between each typed character.
-    static let introTypingSpeed: Double = 0.1
-
-    /// Random jitter added to typing speed (±seconds) for a natural feel.
-    static let introTypingJitter: Double = 0.03
-
-    /// Cursor blink interval in seconds.
-    static let introCursorBlinkRate: Double = 0.42
-
-    // MARK: - CRT monitor effects (intro only)
-
-    /// Background green intensity for the faint CRT phosphor glow.
-    static let crtBackgroundGlow: CGFloat = 0.02
-
-    /// Blur radius for the green phosphor glow around intro text.
-    static let crtGlowRadius: CGFloat = 15
+    // MARK: - CRT monitor effects
 
     /// Spacing in points between CRT scanlines.
     static let crtScanlineSpacing: CGFloat = 3
@@ -102,15 +50,6 @@ enum MatrixConfig {
     /// Trail characters dimmer than this are hidden, so trails
     /// fade cleanly into darkness instead of showing dark remnants.
     static let trailBrightnessCutoff: Double = 0.15
-
-    /// Font size for the intro text (smaller than rain for a terminal feel).
-    static let introFontSize: CGFloat = 18
-
-    /// Padding from screen edges for intro text (terminal-style positioning).
-    static let introPadding: CGFloat = 40
-
-    /// Line height multiplier for intro text (relative to font size).
-    static let introLineHeightMultiplier: CGFloat = 1.4
 
     // MARK: - Character set
 
