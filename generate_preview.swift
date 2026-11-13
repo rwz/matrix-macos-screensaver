@@ -24,6 +24,7 @@ var gifFps: Int = 15
 var renderWidth: Int = 1920
 var renderHeight: Int = 1080
 var output: String = "docs/matrix_preview.gif"
+var tempDirBase: URL = FileManager.default.temporaryDirectory
 
 func printUsage() {
     print("""
@@ -41,6 +42,8 @@ func printUsage() {
       --render-width PX    Render resolution width (default: \(renderWidth))
       --render-height PX   Render resolution height (default: \(renderHeight))
       --output PATH        Output GIF path (default: \(output))
+      --temp-dir DIR       Where to write intermediate frames (default: system temp).
+                           Use a dir under $HOME when ffmpeg runs in Docker/Colima
       --help               Show this help message
     """)
 }
@@ -98,6 +101,9 @@ while argIndex < CommandLine.arguments.count {
         renderHeight = parseInt(val, for: arg)
     case "--output":
         output = requireArgValue(after: argIndex, for: arg); argIndex += 1
+    case "--temp-dir":
+        let val = requireArgValue(after: argIndex, for: arg); argIndex += 1
+        tempDirBase = URL(fileURLWithPath: val).standardizedFileURL
     case "--help":
         printUsage()
         exit(0)
@@ -172,7 +178,7 @@ let totalFrames = Int((skip + duration) * animFps)
 let skipFrames = Int(skip * animFps)
 let sleepMicros = UInt32(saverView.animationTimeInterval * 1_000_000)
 
-let tempDir = FileManager.default.temporaryDirectory
+let tempDir = tempDirBase
     .appendingPathComponent("matrix_preview_\(ProcessInfo.processInfo.processIdentifier)")
 try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
 
