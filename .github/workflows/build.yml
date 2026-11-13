@@ -5,8 +5,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Only the newest push to main needs to reach the `latest` release.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  contents: read
+  contents: write # update the `latest` release
 
 jobs:
   build:
@@ -52,3 +57,20 @@ jobs:
           path: MatrixDigitalRain.saver.zip
           archive: false
           if-no-files-found: error
+
+      # Rolling pre-release with a permanent download URL:
+      # https://github.com/<owner>/<repo>/releases/download/latest/MatrixDigitalRain.saver.zip
+      - name: Publish to `latest` release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          notes="Automatic build of ${GITHUB_SHA::7} from \`main\`. Ad-hoc signed, not notarized: after unzipping, run \`xattr -dr com.apple.quarantine MatrixDigitalRain.saver\`."
+          if gh release view latest >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/latest" -f sha="$GITHUB_SHA" -F force=true >/dev/null
+            gh release edit latest --prerelease --title "Latest build" --notes "$notes"
+          else
+            gh release create latest --prerelease --target "$GITHUB_SHA" --title "Latest build" --notes "$notes"
+          fi
+          gh release upload latest MatrixDigitalRain.saver.zip --clobber
